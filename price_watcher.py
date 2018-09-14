@@ -5,22 +5,18 @@ from lxml.html import fromstring
 from bs4 import BeautifulSoup
 from random import shuffle
 import subprocess as s
-#from colorama import Fore, Back, Style
-#import smtplib
-#from email.mime.multipart import MIMEMultipart
-#from email.mime.text import MIMEText
+from colorama import Fore, Back, Style
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-#future_functionality - to send an email on price decrease
-"""
+
 login_user = "donotreply@ankit"
 login_password = "a2I5cTNqeGhuZGkw"
 smtp_server = "mail.smtp2go.com"
 smtp_port = "2525"
-from_addr = "aman.zed.mehra@gmail.com"
+from_addr = "ankitseeme@gmail.com"
 to_addr = "ankitseeme@gmail.com"
-"""
-
-
 
 
 class AccessError(Exception):
@@ -92,9 +88,9 @@ def extract(html):
         return -1,-1
     try:
         if bsobj.find('span',{'id':'priceblock_dealprice'}):
-            price = int(float(bsobj.find('span',{'id':'priceblock_dealprice'}).text.strip()))
+            price = int(float(bsobj.find('span',{'id':'priceblock_dealprice'}).text.replace(',','').strip()))
         elif bsobj.find('span',{'id':'priceblock_ourprice'}):
-            price = int(float(bsobj.find('span',{'id':'priceblock_ourprice'}).text.strip()))
+            price = int(float(bsobj.find('span',{'id':'priceblock_ourprice'}).text.replace(',','').strip()))
         else:
             raise NoPriceError
     except NoPriceError:
@@ -116,17 +112,17 @@ def compare(curr_price,prev_price,desc):
         if curr_price < int(float(prev_price)):
                print("There is a decrease in price")
                notify(desc,curr_price)
-               return curr_price
+               return curr_price,1
         elif curr_price > int(float(prev_price)):
             print("There is an increase in price")
             print("Lowest Price till now : " + str(int(float(prev_price))))
-            return prev_price
+            return prev_price,0
         else:
             print("This is same as the lowest price")
-            return curr_price
+            return curr_price,0
     else:
         print("New product... You'll be notified of any price drop")
-        return curr_price
+        return curr_price,0
 
 
 def write_to_file(filename,urls):
@@ -134,7 +130,28 @@ def write_to_file(filename,urls):
     for url in urls.keys():
         msg += "\n" + url.strip() + "|" + str(urls[url])
     with open(filename,'w') as f:
-            f.write(msg)
+            f.write(msg[1:])
+
+
+def send_mail(item, prev_price, curr_price, url):
+    msg = MIMEMultipart()
+    msg['From'] = login_user
+    msg['To'] = to_addr
+    msg['Subject'] = "Price drop for " + item
+    body = "Previous Price".ljust(20) + str(prev_price)
+    body += "\n" + "Current Price".ljust(17) + str(curr_price)
+    body += "\n" 
+    body += "\n" + "Item URL".ljust(17) + str(url)
+    body += "\n\n\n" + "End of message"
+    msg.attach(MIMEText(body, 'plain'))
+
+    server = smtplib.SMTP(smtp_server, smtp_port)
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(login_user, login_password)
+    text = msg.as_string()
+    server.sendmail(from_addr, to_addr, text)
 
 
 def get_price(file_name):
@@ -151,7 +168,9 @@ def get_price(file_name):
                 print(desc)
                 print("({})".format(url))
                 print("Current Price: {}".format(price))
-                price_to_write = compare(price,urls[url],desc)
+                price_to_write, to_send_mail_flag = compare(price,urls[url],desc)
+                if to_send_mail_flag == 1:
+                    send_mail(desc,urls[url],price_to_write,url)
                 urls[url] = str(price_to_write).strip()
         else:
         	print("Could not fetch page with URL: {}".format(url))

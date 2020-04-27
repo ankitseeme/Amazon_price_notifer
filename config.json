@@ -1,0 +1,6 @@
+{
+	"FILE_NAME" : "amazon_urls.txt",
+	"LOG_FILE_NAME" : "/home/ankit/logs/amazon.txt",
+	"MAIL_CREDENTIALS_FILE" : "/home/ankit/Python/mail_creds/mail_creds.json",
+	"CHECK_LAST_N_LINES" : 3
+}

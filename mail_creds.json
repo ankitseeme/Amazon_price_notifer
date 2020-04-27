@@ -1,0 +1,6 @@
+{
+	"LOGIN_USER":"userEmailId@gmail.com",
+	"LOGIN_PASSWORD":"userPassword",
+	"SMTP_SERVER":"smtp.gmail.com",
+	"SMTP_PORT":"587"
+}

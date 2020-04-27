@@ -17,8 +17,6 @@ from bs4 import BeautifulSoup
 from colorama import Fore, Style
 
 
-START_TIME = strftime("%Y-%m-%d %H:%M:%S")
-
 MAIL_FROM = "ankitseeme@gmail.com"
 SUCCESS_MAIL_TO = ["ankitseeme@gmail.com", "ankitseeme@outlook.com"]
 FAILURE_MAIL_TO = ["ankitseeme@gmail.com"]
@@ -69,7 +67,6 @@ def get_config(config_file_name):
     except Exception as error:
         print(error)
         system_exit_error("ReadConfigError")
-
 
 
 def get_proxies():
@@ -164,7 +161,6 @@ def get_html(url, proxies):
     return -1
 
 
-
 def extract(url, html):
     """Get Item Description and Price"""
     bsobj = BeautifulSoup(html.text, 'lxml')
@@ -256,6 +252,7 @@ def get_mail_credentails(filename):
     except Exception as error:
         print(error)
         system_exit_error("MailCredentailsError")
+
 
 def create_html(item, prev_price, curr_price, url):
     """Create HTML element for mail"""
@@ -401,6 +398,7 @@ def system_exit_success():
 
 
 if __name__ == '__main__':
+    START_TIME = strftime("%Y-%m-%d %H:%M:%S")
     try:
         FILE_NAME, LOG_FILE_NAME, MAIL_CREDENTIALS_FILE,\
         CHECK_LAST_N_LINES = get_config("config.json")
